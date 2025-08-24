@@ -9,13 +9,13 @@ if(TT_BUILD_RELEASE)
   add_compile_options(-O3 -DNDEBUG)
 endif()
 
-# Find SDL2 + SDL2_ttf
-find_package(SDL2 REQUIRED CONFIG)
-find_package(SDL2_ttf REQUIRED CONFIG)
+# Find SDL3 + SDL3_ttf
+find_package(SDL3 REQUIRED CONFIG)
+find_package(SDL3_ttf REQUIRED CONFIG)
 
 add_executable(typer src/main.cpp)
 
-target_link_libraries(typer PRIVATE SDL2::SDL2 SDL2_ttf::SDL2_ttf)
+target_link_libraries(typer PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
 
 # cmake_minimum_required(VERSION 3.16)
 # project(offline_typetest_sdl2 LANGUAGES CXX)

@@ -1,12 +1,12 @@
 # typer
 
 ## Dependencies
-This project use SDL2 and SDL2_ttf for fonts.
+This project use SDL3 and SDL3_ttf for fonts.
 
 The required packages can be installed using:
 
 ```bash
-sudo apt install -y build-essential cmake libsdl2-dev libsdl2-ttf-dev
+sudo apt install -y build-essential cmake libsdl3-dev libsdl3-ttf-dev
 ```
 
 ## Build
