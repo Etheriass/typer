@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(typer LANGUAGES CXX)
+project(typer_sdl3 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -10,12 +10,12 @@ if(TT_BUILD_RELEASE)
 endif()
 
 # Find SDL3 + SDL3_ttf
-find_package(SDL3 REQUIRED CONFIG)
-find_package(SDL3_ttf REQUIRED CONFIG)
+find_package(SDL3 REQUIRED)
+find_package(SDL3_ttf REQUIRED)
 
-add_executable(typer src/main.cpp)
-
-target_link_libraries(typer PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
+add_subdirectory(src)
+# add_executable(typer src/main.cpp)
+# target_link_libraries(typer PRIVATE SDL3::SDL3)
 
 # cmake_minimum_required(VERSION 3.16)
 # project(offline_typetest_sdl2 LANGUAGES CXX)
