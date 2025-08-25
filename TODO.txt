@@ -5,4 +5,4 @@
 - [ ] Build an efficient random generator
 
 
-code --enable-features=UseOzonePlatform --ozone-platform=wayland
+code --ozone-platform=wayland .

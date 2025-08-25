@@ -1,4 +1,5 @@
-#pragma once // Variant of ifndef..
+
+// #pragma once // Variant of ifndef..
 
 #include <SDL3/SDL.h>
 
@@ -9,3 +10,4 @@ namespace colors
     inline constexpr SDL_Color good = SDL_Color{90, 220, 120, 255};
     inline constexpr SDL_Color bad = SDL_Color{240, 100, 100, 255};
 }
+
