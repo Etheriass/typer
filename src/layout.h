@@ -17,7 +17,7 @@ inline Layout compute_layout(SDL_Renderer *ren, int word_h, int space_w, int lon
   SDL_GetRenderOutputSize(ren, &L.W, &L.H);
   L.word_h = word_h; L.space_w = space_w; L.longest_w = longest_w;
   L.x_words = 0.10f * L.W;  L.y_words = 0.15f * L.H;
-  L.max_w   = (float)L.W - 2.f * L.x_words;               // symmetric margins
+  L.max_w   = (float)L.W - L.x_words;               // symmetric margins
   L.x_entry = (L.W*0.5f - longest_w * 0.5f); L.y_entry = (L.H * 0.5f);
   return L;
 }

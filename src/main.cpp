@@ -56,6 +56,19 @@ static bool handle_event(const SDL_Event &e, Session &s, std::vector<Word> &word
     if (s.finished)
       return false;
 
+    if (!s.started && e.key.key == SDLK_UP && !e.key.repeat && s.vocabulary.size() < MAX_WORD_COUNT)
+    {
+      s.vocabulary = load_vocabulary(VOCABULARY_PATH, s.vocabulary.size() * 1.5);
+      words = create_words(s.vocabulary, ren, font);
+      return true;
+    }
+    if (!s.started && e.key.key == SDLK_DOWN && !e.key.repeat && s.vocabulary.size() > BASE_WORD_COUNT)
+    {
+      s.vocabulary = load_vocabulary(VOCABULARY_PATH, s.vocabulary.size() / 1.5);
+      words = create_words(s.vocabulary, ren, font);
+      return true;
+    }
+
     if (e.key.key == SDLK_SPACE && s.index < words.size())
     {
       if (is_same_text(s.entry, words[s.index]))
@@ -144,13 +157,7 @@ void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font)
     }
 
     if (session.index == words.size() && !session.finished)
-    {
-      session.stats.finish();
-      session.finished = true;
-      SDL_Log("Elapsed time: %.2f seconds", session.stats.elapsed.count());
-      SDL_Log("Words per minute: %.2f", session.stats.wpm);
-      SDL_Log("Accuracy: %.2f%%", session.stats.accuracy * 100);
-    }
+      session.finish();
 
     if (dirty)
     {

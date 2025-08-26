@@ -19,7 +19,7 @@ struct Session {
     bool finished;
 
     void init(){
-        vocabulary = load_vocabulary(VOCABULARY_PATH, WORD_COUNT);
+        vocabulary = load_vocabulary(VOCABULARY_PATH, BASE_WORD_COUNT);
         entry = Word{"", colors::active};
         stats = Stats{0, 0};
         id = 0;
@@ -28,8 +28,15 @@ struct Session {
         finished = false;
     }
 
+    void finish() {
+        if (!finished) {
+            stats.finish();
+            finished = true;
+        }
+    }
+
     void next(){
-        vocabulary = load_vocabulary(VOCABULARY_PATH, WORD_COUNT);
+        vocabulary = load_vocabulary(VOCABULARY_PATH, BASE_WORD_COUNT);
         entry = Word{"", colors::active};
         stats = Stats{0, 0};
         id++;

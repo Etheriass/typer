@@ -17,3 +17,12 @@ cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
 ```
+
+## Run
+
+```bash
+cd build
+./src/typer_main
+```
+
+*If run using VS Code terminal result in `Failed to initialize GTK`, launch VS Code using `code --ozone-platform=wayland .`*
