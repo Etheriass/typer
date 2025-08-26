@@ -38,15 +38,18 @@ static bool handle_event(const SDL_Event &e, Session &s, std::vector<Word> &word
   case SDL_EVENT_QUIT:
     running = false;
     return true;
-  case SDL_EVENT_WINDOW_RESIZED:
-  case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-    return true;
 
   case SDL_EVENT_KEY_DOWN:
   {
     if (e.key.key == SDLK_ESCAPE)
     {
       running = false;
+      return true;
+    }
+    if (s.finished && e.key.key == SDLK_RETURN)
+    {
+      s.next();
+      words = create_words(s.vocabulary, ren, font);
       return true;
     }
 
@@ -119,11 +122,26 @@ void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font)
   TTF_GetStringSize(font, " ", 0, &space_w, &word_h);
 
   bool dirty = true;
+  bool saw_resize = false;
 
+  SDL_Event e;
   while (running)
   {
-    for (SDL_Event e; SDL_PollEvent(&e);)
+    while (SDL_PollEvent(&e))
+    {
+      if (e.type == SDL_EVENT_WINDOW_RESIZED || e.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED)
+      {
+        saw_resize = true;
+        continue;
+      }
       dirty |= handle_event(e, session, words, ren, font, running);
+    }
+
+    if (saw_resize)
+    {
+      dirty = true;
+      saw_resize = false;
+    }
 
     if (session.index == words.size() && !session.finished)
     {
