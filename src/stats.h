@@ -30,7 +30,7 @@ struct Stats
         stop = std::chrono::system_clock::now();
         elapsed = stop - start;
         wpm = (correct_words + incorrect_words) / (elapsed.count() / 60.0f);
-        accuracy = (float)correct_words / (float)(correct_words + incorrect_words);
+        accuracy = (correct_words + incorrect_words) ? (float)correct_words / (float)(correct_words + incorrect_words) : 0.0f;
     }
 
 };

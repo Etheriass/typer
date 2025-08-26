@@ -1,16 +1,21 @@
+#include <cstdint>
 #include <fstream>
 #include <vector>
 #include <string>
 #include <random>
 
-std::vector<std::string> load_text(const std::string& path, size_t size, u_int64_t seed = 0) {
+std::vector<std::string> load_text(const std::string& path, size_t size, uint64_t seed = 0) {
     std::ifstream in(path);
     std::vector<std::string> text;
     std::string s;
+    if (!in) return {}; // couldn't open file
     while (in >> s) {
         if (!s.empty())
             text.push_back(s);
     }
+
+    if (text.empty()) return {}; // no words to sample
+
     std::vector<std::string> sample;
     sample.reserve(size);
     std::mt19937_64 rng(seed ? seed : std::random_device{}());

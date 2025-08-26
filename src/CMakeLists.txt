@@ -3,7 +3,6 @@ add_library(typer_lib
     word.h
     text.cpp
     text.h
-    displayer.cpp
     displayer.h
     colors.h
     stats.h

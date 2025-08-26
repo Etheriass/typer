@@ -6,7 +6,7 @@
 #include "word.h"
 #include "colors.h"
 
-std::vector<Word> create_words(std::vector<std::string>& text, SDL_Renderer *ren, TTF_Font *font)
+std::vector<Word> create_words(const std::vector<std::string>& text, SDL_Renderer *ren, TTF_Font *font)
 {
     std::vector<Word> words;
 
@@ -32,12 +32,12 @@ bool create_word_texture(SDL_Renderer* ren, TTF_Font* font, Word& w) {
     return w.tex != nullptr;
 }
 
-static bool is_same_color(SDL_Color& a, SDL_Color& b){
+static bool is_same_color(const SDL_Color& a, const SDL_Color& b){
     return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
 }
 
 void set_word_color(std::vector<Word>& words, size_t i, SDL_Color c){
-    // if (i >= words.size()) return;
+    if (i >= words.size()) return;
     if (is_same_color(words[i].color, c)) return;
 
     words[i].color = c;
