@@ -6,20 +6,13 @@
 #include <iostream>
 
 #include "word.h"
-#include "text.h"
+#include "vocabulary.h"
 #include "displayer.h"
 #include "colors.h"
 #include "stats.h"
-
-static constexpr int WINDOW_W = 1200;
-static constexpr int WINDOW_H = 700;
-static constexpr int DURATION_SECONDS = 60;
-static constexpr size_t WORD_COUNT = 20;
-static constexpr int BASE_FONT_PX = 28;
-static constexpr int WORD_FONT_PX = 30;
-
-static const char *FONT_PATH = "../assets/UbuntuMono-R.ttf";
-static const char *TEXT_PATH = "../assets/words.txt";
+#include "session.h"
+#include "const.h"
+#include "layout.h"
 
 bool init(SDL_Window *&win, SDL_Renderer *&ren)
 {
@@ -28,118 +21,134 @@ bool init(SDL_Window *&win, SDL_Renderer *&ren)
          TTF_Init();
 }
 
-void loop(SDL_Window *&win, SDL_Renderer *&ren, std::vector<Word> &words, TTF_Font *font, float scale)
+static inline void redraw_entry(SDL_Renderer *ren, TTF_Font *font, Word &entry)
 {
+  if (entry.tex)
+  {
+    SDL_DestroyTexture(entry.tex);
+    entry.tex = nullptr;
+  }
+  generate_word_texture(ren, font, entry);
+}
+
+static bool handle_event(const SDL_Event &e, Session &s, std::vector<Word> &words, SDL_Renderer *ren, TTF_Font *font, bool &running)
+{
+  switch (e.type)
+  {
+  case SDL_EVENT_QUIT:
+    running = false;
+    return true;
+  case SDL_EVENT_WINDOW_RESIZED:
+  case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+    return true;
+
+  case SDL_EVENT_KEY_DOWN:
+  {
+    if (e.key.key == SDLK_ESCAPE)
+    {
+      running = false;
+      return true;
+    }
+
+    if (s.finished)
+      return false;
+
+    if (e.key.key == SDLK_SPACE && s.index < words.size())
+    {
+      if (is_same_text(s.entry, words[s.index]))
+      {
+        s.stats.correct_words++;
+        set_word_color(words[s.index], colors::correct);
+      }
+      else
+      {
+        s.stats.incorrect_words++;
+        set_word_color(words[s.index], colors::incorrect);
+      }
+
+      s.entry.text.clear();
+      redraw_entry(ren, font, s.entry);
+      s.index++;
+      if (s.index < words.size())
+        set_word_color(words[s.index], colors::active);
+      return true;
+    }
+    if (e.key.key == SDLK_BACKSPACE && !s.entry.text.empty())
+    {
+      s.entry.text.pop_back();
+      redraw_entry(ren, font, s.entry);
+      return true;
+    }
+    return false;
+  }
+
+  case SDL_EVENT_TEXT_INPUT:
+  {
+    if (s.finished || s.index >= words.size())
+      return false;
+    if (strcmp(e.text.text, " ") == 0)
+      return false; // space handled in KEY_DOWN
+
+    if (!s.started)
+    {
+      s.started = true;
+      s.stats.start = std::chrono::steady_clock::now();
+    }
+    s.entry.text += e.text.text;
+    redraw_entry(ren, font, s.entry);
+    return true;
+  }
+
+  default:
+    return false;
+  }
+}
+
+void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font)
+{
+  bool running = true;
   SDL_StartTextInput(win); // enables SDL_EVENT_TEXT_INPUT
+
+  Session session;
+  session.init();
+
+  std::vector<Word> words = create_words(session.vocabulary, ren, font);
 
   int longest_word_w = 0, word_h = 0, space_w = 0;
   TTF_GetStringSize(font, "fire-extinguisher", 0, &longest_word_w, &word_h);
   TTF_GetStringSize(font, " ", 0, &space_w, &word_h);
 
-
-  bool running = true;
-  size_t current_index = 0;
-  set_word_color(words, current_index, colors::active);
-
-  Word entry = Word{"", colors::active};
-  create_word_texture(ren, font, entry);
-
-  Stats stats = Stats{0, 0};
-  bool started = false;
-  bool finished = false;
+  bool dirty = true;
 
   while (running)
   {
-    SDL_Event e;
-    while (SDL_PollEvent(&e))
-    {
-      if (e.type == SDL_EVENT_QUIT)
-        running = false;
-      else if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE)
-        running = false;
-      else if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_SPACE && current_index < words.size())
-      {
-        if (is_same_text(entry, words[current_index]))
-        {
-          stats.correct_words++;
-          set_word_color(words, current_index, colors::correct);
-        }
-        else
-        {
-          stats.incorrect_words++;
-          set_word_color(words, current_index, colors::incorrect);
-        }
+    for (SDL_Event e; SDL_PollEvent(&e);)
+      dirty |= handle_event(e, session, words, ren, font, running);
 
-        SDL_DestroyTexture(entry.tex);
-        entry.tex = nullptr;
-        entry.text.clear();
-        current_index++;
-        if (current_index < words.size())
-          set_word_color(words, current_index, colors::active);
-      }
-      else if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_BACKSPACE && !entry.text.empty())
-      {
-        entry.text.pop_back();
-        SDL_DestroyTexture(entry.tex);
-        entry.tex = nullptr;
-        create_word_texture(ren, font, entry);
-      }
-      else if (e.type == SDL_EVENT_TEXT_INPUT)
-      {
-        if (strcmp(e.text.text, " ") != 0)
-        {
-          if (!started)
-          {
-            started = true;
-            stats.start = std::chrono::system_clock::now();
-          }
-          entry.text += e.text.text;
-          SDL_DestroyTexture(entry.tex);
-          entry.tex = nullptr;
-          create_word_texture(ren, font, entry);
-        }
-      }
+    if (session.index == words.size() && !session.finished)
+    {
+      session.stats.finish();
+      session.finished = true;
+      SDL_Log("Elapsed time: %.2f seconds", session.stats.elapsed.count());
+      SDL_Log("Words per minute: %.2f", session.stats.wpm);
+      SDL_Log("Accuracy: %.2f%%", session.stats.accuracy * 100);
     }
 
-    if (current_index == words.size() && !finished)
+    if (dirty)
     {
-      stats.finish();
-      finished = true;
-      SDL_Log("Elapsed time: %.2f seconds", stats.elapsed.count());
-      SDL_Log("Words per minute: %.2f", stats.wpm);
-      SDL_Log("Accuracy: %.2f%%", stats.accuracy * 100);
+      Layout L = compute_layout(ren, word_h, space_w, longest_word_w);
+      render_frame(ren, font, session, words, L);
+      dirty = false;
     }
-
-    // draw
-    int W, H;
-    SDL_GetRenderOutputSize(ren, &W, &H);
-    SDL_SetRenderDrawColor(ren, 18, 18, 18, 255);
-    SDL_RenderClear(ren);
-
-    // translucent overlay example
-    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
-    SDL_FRect overlay{0, 0, (float)W, (float)H};
-    SDL_SetRenderDrawColor(ren, 18, 18, 18, 100);
-    SDL_RenderFillRect(ren, &overlay);
-
-    float x_words = 0.1 * W, y_words = 0.15 * H;
-    display_words(ren, font, words, x_words, y_words, (float)W - x_words, space_w, word_h);
-
-    float x_entry = (W / 2 - longest_word_w / 2), y_entry = (H / 2);
-    SDL_FRect entry_line{x_entry - 10, y_entry + word_h + 10, longest_word_w + 20.0f, 10};
-    SDL_SetRenderDrawColor(ren, 250, 250, 250, 255);
-    SDL_RenderFillRect(ren, &entry_line);
-    SDL_FRect dst{x_entry, y_entry, (float)entry.w, (float)entry.h};
-    SDL_RenderTexture(ren, entry.tex, nullptr, &dst);
-
-    SDL_RenderPresent(ren);
   }
+
   SDL_StopTextInput(win);
+  destroy_textures(session, words);
 }
 
-void quit(SDL_Window *win, SDL_Renderer *ren, TTF_Font *font, bool error)
+void quit(SDL_Window *win, SDL_Renderer *ren, TTF_Font *font, bool sdl_error)
 {
-  if (error)
+  if (sdl_error)
     SDL_Log("An error occurred: %s", SDL_GetError());
   SDL_DestroyRenderer(ren);
   SDL_DestroyWindow(win);
@@ -159,6 +168,12 @@ int main(int argc, char **argv)
     return 1;
   }
 
+  if (!SDL_SetWindowResizable(win, true))
+  {
+    quit(win, ren, nullptr, true);
+    return 1;
+  }
+
   float scale = SDL_GetWindowDisplayScale(win);
   if (scale == 0.0f)
   {
@@ -166,23 +181,14 @@ int main(int argc, char **argv)
     scale = 1.0f;
   }
 
-  std::vector<std::string> text = load_text(TEXT_PATH, WORD_COUNT);
-  if (text.empty())
-  {
-    SDL_Log("Failed to load text from %s", TEXT_PATH);
-    quit(win, ren, nullptr, false);
-  }
-
   TTF_Font *font = TTF_OpenFont(FONT_PATH, WORD_FONT_PX * scale);
   if (!font)
   {
-    SDL_Log("Failed to load font: %s", SDL_GetError());
-    quit(win, ren, nullptr, false);
+    quit(win, ren, nullptr, true);
+    return 1;
   }
 
-  std::vector<Word> words = create_words(text, ren, font);
-
-  loop(win, ren, words, font, scale);
+  loop(win, ren, font);
 
   quit(win, ren, font, false);
   return 0;
