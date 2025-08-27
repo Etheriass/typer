@@ -4,7 +4,7 @@ add_library(typer_lib
     vocabulary.cpp
     vocabulary.h
     displayer.h
-    colors.h
+    theme.h
     stats.h
     session.h
     const.h

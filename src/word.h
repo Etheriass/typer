@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "theme.h"
+
 struct Word {
     std::string text;
     SDL_Color   color;
@@ -13,7 +15,7 @@ struct Word {
     int w = 0, h = 0;          // texture size in pixels
 };
 
-std::vector<Word> create_words(const std::vector<std::string>& text, SDL_Renderer *ren, TTF_Font *font);
+std::vector<Word> create_words(const std::vector<std::string>& text, SDL_Renderer *ren, TTF_Font *font, const Theme &theme);
 
 bool generate_word_texture(SDL_Renderer* ren, TTF_Font* font, Word& w);
 

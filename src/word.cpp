@@ -4,14 +4,14 @@
 #include <vector>
 
 #include "word.h"
-#include "colors.h"
+#include "theme.h"
 
-std::vector<Word> create_words(const std::vector<std::string>& text, SDL_Renderer *ren, TTF_Font *font)
+std::vector<Word> create_words(const std::vector<std::string>& text, SDL_Renderer *ren, TTF_Font *font, const Theme &theme)
 {
     std::vector<Word> words;
     words.reserve(text.size());
     for (size_t i = 0; i < text.size(); ++i)
-        words.push_back(Word{text[i], i == 0 ? colors::active : colors::incoming});
+        words.push_back(Word{text[i], i == 0 ? theme.word_active : theme.word_incoming});
 
     // pre-create textures once
     for (Word &w : words)

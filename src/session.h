@@ -6,7 +6,7 @@
 #include "word.h"
 #include "stats.h"
 #include "vocabulary.h"
-#include "colors.h"
+#include "theme.h"
 #include "const.h"
 
 struct Session {
@@ -20,9 +20,17 @@ struct Session {
 
     void init(){
         vocabulary = load_vocabulary(VOCABULARY_PATH, BASE_WORD_COUNT);
-        entry = Word{"", colors::active};
+        entry = Word{""};
         stats = Stats{0, 0};
         id = 0;
+        index = 0;
+        started = false;
+        finished = false;
+    }
+
+    void reset() {
+        entry = Word{""};
+        stats = Stats{0, 0};
         index = 0;
         started = false;
         finished = false;
@@ -37,7 +45,7 @@ struct Session {
 
     void next(){
         vocabulary = load_vocabulary(VOCABULARY_PATH, BASE_WORD_COUNT);
-        entry = Word{"", colors::active};
+        entry = Word{""};
         stats = Stats{0, 0};
         id++;
         index = 0;
