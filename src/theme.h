@@ -2,14 +2,9 @@
 
 #include <SDL3/SDL.h>
 
-enum class ThemeMode
-{
-    Dark,
-    Light
-};
-
 struct Theme
 {
+    bool is_dark;
     SDL_Color background;
     SDL_Color word_incoming;
     SDL_Color word_active;
@@ -17,33 +12,31 @@ struct Theme
     SDL_Color word_incorrect;
     SDL_Color text;
 };
-inline Theme &palette(ThemeMode mode)
-{
-    static Theme DARK_THEME = {
-        .background = SDL_Color{40, 41, 54, 255},
-        .word_incoming = SDL_Color{200, 200, 200, 255},
-        .word_active = SDL_Color{255, 255, 255, 255},
-        .word_correct = SDL_Color{90, 220, 120, 255},
-        .word_incorrect = SDL_Color{240, 100, 100, 255},
-        .text = SDL_Color{255, 255, 255, 255},
-    };
 
-    static Theme LIGHT_THEME = {
-        .background = SDL_Color{255, 252, 239, 255},
-        .word_incoming = SDL_Color{100, 100, 100, 255},
-        .word_active = SDL_Color{0, 0, 0, 255},
-        .word_correct = SDL_Color{50, 205, 50, 255},
-        .word_incorrect = SDL_Color{245, 73, 39, 255},
-        .text = SDL_Color{0, 0, 0, 255},
-    };
-    return (mode == ThemeMode::Dark) ? DARK_THEME : LIGHT_THEME;
-}
+inline const Theme DARK_THEME = {
+    .is_dark = true,
+    .background = SDL_Color{40, 41, 54, 255},
+    .word_incoming = SDL_Color{200, 200, 200, 255},
+    .word_active = SDL_Color{255, 255, 255, 255},
+    .word_correct = SDL_Color{90, 220, 120, 255},
+    .word_incorrect = SDL_Color{240, 100, 100, 255},
+    .text = SDL_Color{255, 255, 255, 255},
+};
+
+inline const Theme LIGHT_THEME = {
+    .is_dark = false,
+    .background = SDL_Color{255, 252, 239, 255},
+    .word_incoming = SDL_Color{100, 100, 100, 255},
+    .word_active = SDL_Color{0, 0, 0, 255},
+    .word_correct = SDL_Color{50, 205, 50, 255},
+    .word_incorrect = SDL_Color{245, 73, 39, 255},
+    .text = SDL_Color{0, 0, 0, 255},
+};
 
 struct ThemeState
 {
-    ThemeMode mode = ThemeMode::Dark;
-    Theme &get() { return palette(mode); }
-    void toggle() { mode = (mode == ThemeMode::Dark) ? ThemeMode::Light : ThemeMode::Dark; }
+    Theme current = DARK_THEME;
+    void toggle() { current = current.is_dark ? LIGHT_THEME : DARK_THEME; }
 };
 
 // namespace colors

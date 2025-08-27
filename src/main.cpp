@@ -31,7 +31,7 @@ static inline void redraw_entry(SDL_Renderer *ren, TTF_Font *font, Word &entry)
   generate_word_texture(ren, font, entry);
 }
 
-static bool handle_event(const SDL_Event &e, Session &s, std::vector<Word> &words, SDL_Renderer *ren, TTF_Font *font, ThemeState &theme_state, Theme &theme, bool &running)
+static bool handle_event(const SDL_Event &e, Session &s, std::vector<Word> &words, SDL_Renderer *ren, TTF_Font *font, ThemeState &theme_state, bool &running)
 {
   switch (e.type)
   {
@@ -49,8 +49,8 @@ static bool handle_event(const SDL_Event &e, Session &s, std::vector<Word> &word
     if (s.finished && e.key.key == SDLK_RETURN)
     {
       s.next();
-      words = create_words(s.vocabulary, ren, font, theme);
-      set_word_color(s.entry, theme.word_active);
+      words = create_words(s.vocabulary, ren, font, theme_state.current);
+      set_word_color(s.entry, theme_state.current.word_active);
       return true;
     }
 
@@ -60,22 +60,21 @@ static bool handle_event(const SDL_Event &e, Session &s, std::vector<Word> &word
     if (!s.started && e.key.key == SDLK_UP && !e.key.repeat && s.vocabulary.size() < MAX_WORD_COUNT)
     {
       s.vocabulary = load_vocabulary(VOCABULARY_PATH, s.vocabulary.size() * 1.5);
-      words = create_words(s.vocabulary, ren, font, theme);
+      words = create_words(s.vocabulary, ren, font, theme_state.current);
       return true;
     }
     if (!s.started && e.key.key == SDLK_DOWN && !e.key.repeat && s.vocabulary.size() > BASE_WORD_COUNT)
     {
       s.vocabulary = load_vocabulary(VOCABULARY_PATH, s.vocabulary.size() / 1.5);
-      words = create_words(s.vocabulary, ren, font, theme);
+      words = create_words(s.vocabulary, ren, font, theme_state.current);
       return true;
     }
 
     if (e.key.key == SDLK_TAB){
       theme_state.toggle();
-      theme = theme_state.get();
       s.reset();
-      words = create_words(s.vocabulary, ren, font, theme);
-      set_word_color(s.entry, theme.word_active);
+      words = create_words(s.vocabulary, ren, font, theme_state.current);
+      set_word_color(s.entry, theme_state.current.word_active);
       redraw_entry(ren, font, s.entry);
       return true;
     }
@@ -85,19 +84,19 @@ static bool handle_event(const SDL_Event &e, Session &s, std::vector<Word> &word
       if (is_same_text(s.entry, words[s.index]))
       {
         s.stats.correct_words++;
-        set_word_color(words[s.index], theme.word_correct);
+        set_word_color(words[s.index], theme_state.current.word_correct);
       }
       else
       {
         s.stats.incorrect_words++;
-        set_word_color(words[s.index], theme.word_incorrect);
+        set_word_color(words[s.index], theme_state.current.word_incorrect);
       }
 
       s.entry.text.clear();
       redraw_entry(ren, font, s.entry);
       s.index++;
       if (s.index < words.size())
-        set_word_color(words[s.index], theme.word_active);
+        set_word_color(words[s.index], theme_state.current.word_active);
       return true;
     }
     if (e.key.key == SDLK_BACKSPACE && !s.entry.text.empty())
@@ -136,13 +135,12 @@ void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font)
   bool running = true;
   SDL_StartTextInput(win); // enables SDL_EVENT_TEXT_INPUT
   ThemeState theme_state;
-  Theme &theme = theme_state.get();
 
   Session session;
   session.init();
-  set_word_color(session.entry, theme.word_active);
+  set_word_color(session.entry, theme_state.current.word_active);
 
-  std::vector<Word> words = create_words(session.vocabulary, ren, font, theme);
+  std::vector<Word> words = create_words(session.vocabulary, ren, font, theme_state.current);
 
   int longest_word_w = 0, word_h = 0, space_w = 0;
   TTF_GetStringSize(font, "fire-extinguisher", 0, &longest_word_w, &word_h);
@@ -161,7 +159,7 @@ void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font)
         saw_resize = true;
         continue;
       }
-      dirty |= handle_event(e, session, words, ren, font, theme_state, theme, running);
+      dirty |= handle_event(e, session, words, ren, font, theme_state, running);
     }
 
     if (saw_resize)
@@ -176,7 +174,7 @@ void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font)
     if (dirty)
     {
       Layout L = compute_layout(ren, word_h, space_w, longest_word_w);
-      render_frame(ren, font, session, words, L, theme);
+      render_frame(ren, font, session, words, L, theme_state.current);
       dirty = false;
     }
   }
