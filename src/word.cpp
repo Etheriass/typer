@@ -13,7 +13,7 @@ std::vector<Word> create_words(const std::vector<std::string>& text, SDL_Rendere
     for (size_t i = 0; i < text.size(); ++i)
         words.push_back(Word{text[i], i == 0 ? theme.word_active : theme.word_incoming});
 
-    // pre-create textures once
+    // pre-create textures
     for (Word &w : words)
         generate_word_texture(ren, font, w);
 

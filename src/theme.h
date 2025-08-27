@@ -17,9 +17,9 @@ struct Theme
     SDL_Color word_incorrect;
     SDL_Color text;
 };
-inline const Theme &palette(ThemeMode mode)
+inline Theme &palette(ThemeMode mode)
 {
-    static const Theme DARK_THEME = {
+    static Theme DARK_THEME = {
         .background = SDL_Color{40, 41, 54, 255},
         .word_incoming = SDL_Color{200, 200, 200, 255},
         .word_active = SDL_Color{255, 255, 255, 255},
@@ -28,7 +28,7 @@ inline const Theme &palette(ThemeMode mode)
         .text = SDL_Color{255, 255, 255, 255},
     };
 
-    static const Theme LIGHT_THEME = {
+    static Theme LIGHT_THEME = {
         .background = SDL_Color{255, 252, 239, 255},
         .word_incoming = SDL_Color{100, 100, 100, 255},
         .word_active = SDL_Color{0, 0, 0, 255},
@@ -42,7 +42,7 @@ inline const Theme &palette(ThemeMode mode)
 struct ThemeState
 {
     ThemeMode mode = ThemeMode::Dark;
-    const Theme &get() const { return palette(mode); }
+    Theme &get() { return palette(mode); }
     void toggle() { mode = (mode == ThemeMode::Dark) ? ThemeMode::Light : ThemeMode::Dark; }
 };
 

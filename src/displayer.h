@@ -35,7 +35,7 @@ inline void display_words(SDL_Renderer *ren, TTF_Font *font, std::vector<Word> &
 }
 
 static void display_text(SDL_Renderer *ren, TTF_Font *font, const std::string &text,
-                         float x0, float y0, float x_max, float space_w, float line_h, const ThemeState &theme,
+                         float x0, float y0, float x_max, float space_w, float line_h, const Theme &theme,
                          float lineSpacing = 8.0f)
 {
     float x = x0, y = y0;
@@ -43,7 +43,7 @@ static void display_text(SDL_Renderer *ren, TTF_Font *font, const std::string &t
     int text_w = 0, text_h = 0;
     TTF_GetStringSize(font, text.c_str(), 0, &text_w, &text_h);
 
-    SDL_Surface *surf = TTF_RenderText_Blended(font, text.c_str(), 0, theme.get().text);
+    SDL_Surface *surf = TTF_RenderText_Blended(font, text.c_str(), 0, theme.text);
     if (!surf)
         return;
 
@@ -65,7 +65,7 @@ static void display_text(SDL_Renderer *ren, TTF_Font *font, const std::string &t
 }
 
 static void display_results(SDL_Renderer *ren, TTF_Font *font, Session s,
-                     float x0, float y0, float x_max, float space_w, float line_h, const ThemeState &theme,
+                     float x0, float y0, float x_max, float space_w, float line_h, const Theme &theme,
                      float lineSpacing = 8.0f)
 {
 
@@ -78,10 +78,9 @@ static void display_results(SDL_Renderer *ren, TTF_Font *font, Session s,
     display_text(ren, font, accuracy, x0, y0 + 2 * (line_h + lineSpacing), x_max, space_w, line_h, theme);
 }
 
-inline void render_frame(SDL_Renderer *ren, TTF_Font *font, const Session &s, std::vector<Word> &words, const Layout &L, const ThemeState &theme)
+inline void render_frame(SDL_Renderer *ren, TTF_Font *font, const Session &s, std::vector<Word> &words, const Layout &L, const Theme &theme)
 {
-    Theme current_theme = theme.get();
-    SDL_SetRenderDrawColor(ren, current_theme.background.r, current_theme.background.g, current_theme.background.b, current_theme.background.a);
+    SDL_SetRenderDrawColor(ren, theme.background.r, theme.background.g, theme.background.b, theme.background.a);
     SDL_RenderClear(ren);
 
     display_words(ren, font, words, L.x_words, L.y_words, L.max_w, L.space_w, L.word_h);
@@ -92,7 +91,7 @@ inline void render_frame(SDL_Renderer *ren, TTF_Font *font, const Session &s, st
     }
     else
     {
-        SDL_SetRenderDrawColor(ren, current_theme.text.r, current_theme.text.g, current_theme.text.b, current_theme.text.a);
+        SDL_SetRenderDrawColor(ren, theme.text.r, theme.text.g, theme.text.b, theme.text.a);
         SDL_FRect entry_line{L.x_entry - 10, L.y_entry + L.word_h + 10, L.longest_w + 20.f, 10};
         SDL_RenderFillRect(ren, &entry_line);
 
