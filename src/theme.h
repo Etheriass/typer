@@ -25,12 +25,12 @@ inline const Theme DARK_THEME = {
 
 inline const Theme LIGHT_THEME = {
     .is_dark = false,
-    .background = SDL_Color{255, 252, 239, 255},
+    .background = SDL_Color{247, 244, 233, 255},
     .word_incoming = SDL_Color{100, 100, 100, 255},
-    .word_active = SDL_Color{0, 0, 0, 255},
-    .word_correct = SDL_Color{50, 205, 50, 255},
+    .word_active = SDL_Color{41, 52, 56, 255},
+    .word_correct = SDL_Color{40, 185, 40, 255},
     .word_incorrect = SDL_Color{245, 73, 39, 255},
-    .text = SDL_Color{0, 0, 0, 255},
+    .text = SDL_Color{41, 52, 56, 255},
 };
 
 struct ThemeState

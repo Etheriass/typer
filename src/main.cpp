@@ -26,7 +26,7 @@ void update_entry_texture(SDL_Renderer *ren, TTF_Font *font, Text &entry)
   generate_text_texture(ren, entry, font, entry.color);
 }
 
-static bool handle_event(const SDL_Event &e, Session &s, std::vector<Text> &words, Text &entry, SDL_Renderer *ren, TTF_Font *font, ThemeState &theme_state, bool &running)
+static bool handle_event(const SDL_Event &e, Session &s, std::vector<Text> &words, Text &entry, SDL_Renderer *ren, TTF_Font *font, TTF_Font *font_active, ThemeState &theme_state, bool &running)
 {
   switch (e.type)
   {
@@ -93,7 +93,7 @@ static bool handle_event(const SDL_Event &e, Session &s, std::vector<Text> &word
       update_entry_texture(ren, font, entry);
       s.index++;
       if (s.index < words.size())
-        change_text_color(ren, font, words[s.index], theme_state.current.word_active);
+        change_text_color(ren, font_active, words[s.index], theme_state.current.word_active);
       return true;
     }
     if (e.key.key == SDLK_BACKSPACE && !entry.text.empty())
@@ -127,7 +127,7 @@ static bool handle_event(const SDL_Event &e, Session &s, std::vector<Text> &word
   }
 }
 
-void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font)
+void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font, TTF_Font *font_active )
 {
   bool running = true;
   SDL_StartTextInput(win); // enables SDL_EVENT_TEXT_INPUT
@@ -157,7 +157,7 @@ void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font)
         saw_resize = true;
         continue;
       }
-      dirty |= handle_event(e, session, words, entry, ren, font, theme_state, running);
+      dirty |= handle_event(e, session, words, entry, ren, font, font_active, theme_state, running);
     }
 
     if (saw_resize)
@@ -228,13 +228,14 @@ int main(int argc, char **argv)
     quit(win, ren, nullptr, true);
     return 1;
   }
+  TTF_Font *font_active = TTF_OpenFont(fontPath.c_str(), (WORD_FONT_PX * scale) + 1);
   // else
   // {
   //   int dpi = int(16 * scale);
   //   TTF_SetFontSizeDPI(font, WORD_FONT_PX * scale, dpi, dpi);
   // }
 
-  loop(win, ren, font);
+  loop(win, ren, font, font_active);
 
   quit(win, ren, font, false);
   return 0;
