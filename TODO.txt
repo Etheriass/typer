@@ -1,7 +1,0 @@
-# TODO
-- [x] CMake setup (C++23, SDL3)
-- [ ] Create interface
-- [ ] Find most frequent English words
-- [ ] Build an efficient random generator
-
-

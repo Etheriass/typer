@@ -1,5 +1,19 @@
 # typer
 
+Minimalist typing practice application:
+
+
+
+## Control
+All control is done via keyboard shortcuts:
+- `ESC`: Reset the session
+- `RETURN`: Start the next session
+- `UP`: Increase text size
+- `DOWN`: Decrease text size
+- `TAB`: Toggle theme
+- `SPACE`: Submit current word
+- `BACKSPACE`: Remove last character
+
 ## Dependencies
 This project use SDL3 and SDL3_ttf for fonts.
 
