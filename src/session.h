@@ -31,8 +31,10 @@ struct Session
         finished = false;
     }
 
-    void reset()
+    void reset(bool keep_vocab = true)
     {
+        if (!keep_vocab)
+            vocabulary = load_vocabulary(vocab_path, BASE_WORD_COUNT);
         stats = Stats{0, 0};
         index = 0;
         started = false;

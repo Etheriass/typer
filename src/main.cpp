@@ -38,7 +38,10 @@ static bool handle_event(const SDL_Event &e, Session &s, std::vector<Text> &word
   {
     if (e.key.key == SDLK_ESCAPE)
     {
-      running = false;
+      s.reset(false);
+      words = generate_words(s.vocabulary, ren, font, theme_state.current);
+      entry.text.clear();
+      update_entry_texture(ren, font, entry);
       return true;
     }
     if (s.finished && e.key.key == SDLK_RETURN)
