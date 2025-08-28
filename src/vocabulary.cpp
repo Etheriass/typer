@@ -8,7 +8,9 @@ std::vector<std::string> load_vocabulary(const std::string& path, size_t size, u
     std::ifstream in(path);
     std::vector<std::string> vocabulary;
     std::string s;
-    if (!in) return {}; // couldn't open file
+    if (!in) return {
+        "Error: Couldn't open vocabulary file"
+    };
     while (in >> s) {
         if (!s.empty())
             vocabulary.push_back(s);

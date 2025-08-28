@@ -6,118 +6,78 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <vector>
 
-#include "word.h"
+#include "text.h"
 #include "session.h"
 #include "layout.h"
 
-// Draw words left->right with wrap at maxWidth.
-inline void display_words(SDL_Renderer *ren, TTF_Font *font, std::vector<Word> &words,
-                          float x0, float y0, float x_max, float space_w, float line_h,
+inline void display_text(SDL_Renderer *ren, const TTF_Font *font, const Text &text, const float x, const float y)
+{
+    SDL_FRect dst{x, y, (float)text.w, (float)text.h};
+    SDL_RenderTexture(ren, text.tex, nullptr, &dst);
+}
+
+inline void display_words(SDL_Renderer *ren, TTF_Font *font, std::vector<Text> &words, const Layout &L,
                           float lineSpacing = 8.0f)
 {
-    float x = x0, y = y0;
-    for (Word &word : words)
+    float x = L.x_words, y = L.y_words;
+    for (Text &word : words)
     {
-        if (!generate_word_texture(ren, font, word))
-            continue;
-
-        if (x + word.w > x_max) // wrap if needed
+        if (x + word.w > L.max_w) // wrap if needed
         {
-            x = x0;
-            y += line_h + lineSpacing;
+            x = L.x_words;
+            y += L.text_h + lineSpacing;
         }
-
-        SDL_FRect dst{x, y, (float)word.w, (float)word.h};
-        SDL_RenderTexture(ren, word.tex, nullptr, &dst);
-
-        x += word.w + space_w; // add a space after each word
+        display_text(ren, font, word, x, y);
+        x += word.w + L.space_w; // add a space after each word
     }
 }
 
-static void display_text(SDL_Renderer *ren, TTF_Font *font, const std::string &text,
-                         float x0, float y0, float x_max, float space_w, float line_h, const Theme &theme,
-                         float lineSpacing = 8.0f)
-{
-    float x = x0, y = y0;
-
-    int text_w = 0, text_h = 0;
-    TTF_GetStringSize(font, text.c_str(), 0, &text_w, &text_h);
-
-    SDL_Surface *surf = TTF_RenderText_Blended(font, text.c_str(), 0, theme.text);
-    if (!surf)
-        return;
-
-    SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, surf);
-    SDL_DestroySurface(surf);
-    if (!tex)
-        return;
-
-    if (x + text_w > x_max)
-    {
-        x = x0;
-        y += line_h + lineSpacing;
-    }
-
-    SDL_FRect dst{x, y, (float)text_w, (float)text_h};
-    SDL_RenderTexture(ren, tex, nullptr, &dst);
-
-    SDL_DestroyTexture(tex);
-}
-
-static void display_results(SDL_Renderer *ren, TTF_Font *font, Session s,
-                     float x0, float y0, float x_max, float space_w, float line_h, const Theme &theme,
-                     float lineSpacing = 8.0f)
+static void display_results(SDL_Renderer *ren, TTF_Font *font, Session s, const Layout &L, const Theme &theme,
+                            float lineSpacing = 8.0f)
 {
 
     const std::string time = "Time elapsed: " + std::format("{:.1f}", s.stats.elapsed.count());
     const std::string wpm = "Word per minutes: " + std::format("{:.1f}", s.stats.wpm);
     const std::string accuracy = "Accuracy: " + std::format("{:.1f}", s.stats.accuracy);
 
-    display_text(ren, font, time, x0, y0, x_max, space_w, line_h, theme);
-    display_text(ren, font, wpm, x0, y0 + line_h + lineSpacing, x_max, space_w, line_h, theme);
-    display_text(ren, font, accuracy, x0, y0 + 2 * (line_h + lineSpacing), x_max, space_w, line_h, theme);
+    SDL_Color text_color = theme.text;
+    display_text(ren, font, Text{time, text_color, font, ren}, L.x_entry, L.y_entry);
+    display_text(ren, font, Text{wpm, text_color, font, ren}, L.x_entry, L.y_entry + L.text_h + lineSpacing);
+    display_text(ren, font, Text{accuracy, text_color, font, ren}, L.x_entry, L.y_entry + 2 * (L.text_h + lineSpacing));
 }
 
-inline void render_frame(SDL_Renderer *ren, TTF_Font *font, const Session &s, std::vector<Word> &words, const Layout &L, const Theme &theme)
+inline void render_frame(SDL_Renderer *ren, TTF_Font *font, const Session &s, std::vector<Text> &words, Text &entry, const Layout &L, const Theme &theme)
 {
     SDL_SetRenderDrawColor(ren, theme.background.r, theme.background.g, theme.background.b, theme.background.a);
     SDL_RenderClear(ren);
 
-    display_words(ren, font, words, L.x_words, L.y_words, L.max_w, L.space_w, L.word_h);
+    display_words(ren, font, words, L);
 
     if (s.finished)
     {
-        display_results(ren, font, s, L.x_entry, L.y_entry, L.max_w, L.space_w, L.word_h, theme);
+        display_results(ren, font, s, L, theme);
     }
     else
     {
         SDL_SetRenderDrawColor(ren, theme.text.r, theme.text.g, theme.text.b, theme.text.a);
-        SDL_FRect entry_line{L.x_entry - 10, L.y_entry + L.word_h + 10, L.longest_w + 20.f, 10};
+        SDL_FRect entry_line{L.x_entry - 10, L.y_entry + L.text_h + 10, L.longest_w + 20.f, 10};
         SDL_RenderFillRect(ren, &entry_line);
 
-        if (s.entry.tex)
+        if (entry.tex)
         {
-            SDL_FRect dst{L.x_entry, L.y_entry, (float)s.entry.w, (float)s.entry.h};
-            SDL_RenderTexture(ren, s.entry.tex, nullptr, &dst);
+            display_text(ren, font, entry, L.x_entry, L.y_entry);
         }
     }
 
     SDL_RenderPresent(ren);
 }
 
-void destroy_textures(Session &s, std::vector<Word> &words)
+inline void destroy_textures(Text &entry, std::vector<Text> &words)
 {
-    if (s.entry.tex)
-    {
-        SDL_DestroyTexture(s.entry.tex);
-        s.entry.tex = nullptr;
-    }
-    for (auto &w : words)
-        if (w.tex)
-        {
-            SDL_DestroyTexture(w.tex);
-            w.tex = nullptr;
-        }
+    if (entry.tex)
+        entry.destroy_texture();
+    for (Text &w : words)
+        w.destroy_texture();
 }
 
 #endif

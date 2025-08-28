@@ -10,7 +10,7 @@ static constexpr size_t MAX_WORD_COUNT = 100;
 static constexpr int BASE_FONT_PX = 28;
 static constexpr int WORD_FONT_PX = 30;
 
-static const char *FONT_PATH = "../assets/UbuntuMono-R.ttf";
-static const char *VOCABULARY_PATH = "../assets/words.txt";
+static const char *FONT_PATH = "assets/UbuntuMono-R.ttf";
+static const char *VOCABULARY_PATH = "assets/words.txt";
 
 #endif
