@@ -38,7 +38,7 @@ static void display_results(SDL_Renderer *ren, TTF_Font *font, Session s, const 
 
     const std::string time = "Time elapsed: " + std::format("{:.1f}", s.stats.elapsed.count());
     const std::string wpm = "Word per minutes: " + std::format("{:.1f}", s.stats.wpm);
-    const std::string accuracy = "Accuracy: " + std::format("{:.1f}", s.stats.accuracy);
+    const std::string accuracy = "Accuracy: " + std::format("{:.2f}", s.stats.accuracy);
 
     SDL_Color text_color = theme.text;
     display_text(ren, font, Text{time, text_color, font, ren}, L.x_entry, L.y_entry);
