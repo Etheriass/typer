@@ -153,7 +153,7 @@ void loop(SDL_Window *&win, SDL_Renderer *&ren, TTF_Font *font, TTF_Font *font_a
   SDL_Event e;
   while (running)
   {
-    while (SDL_PollEvent(&e))
+    while (SDL_WaitEventTimeout(&e, 5)) // wait for events with a timeout to reduce CPU usage
     {
       if (e.type == SDL_EVENT_WINDOW_RESIZED || e.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED)
       {
@@ -204,6 +204,10 @@ int main(int argc, char **argv)
   {
     quit(win, ren, nullptr, true);
     return 1;
+  }
+
+  if (!SDL_SetRenderVSync(ren, 1)) {
+    SDL_Log("VSync request not honored: %s", SDL_GetError());
   }
 
   if (!SDL_SetWindowResizable(win, true))
