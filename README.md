@@ -2,7 +2,7 @@
 
 Minimalist typing practice application:
 
-![alt text](https://github.com/Etheriass/typer/blob/main/screen.png?raw=true)
+![Illustration image](https://github.com/Etheriass/typer/blob/main/screen.png?raw=true)
 
 ## Control
 All control is done via keyboard shortcuts:
